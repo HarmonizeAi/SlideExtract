@@ -3,15 +3,26 @@ import cropScreenshots from "./cropper";
 import createThumbnail from "./extractScreenshots";
 import removeSimilar from "./removeSimilar";
 
+
+function extractFileName(filePath: string): string {
+  const fileName = filePath.split(/[\\/]/).pop() || filePath;
+  return fileName.split('.')[0].replace(/ /g, '_').replace(/[^\_a-zA-Z0-9]/g, '');
+}
+
 async function main() {
   const input = process.argv[2]; // Get input from command line
   const boundingRectInput = process.argv[3]; // Get bounding box from command line
-  const inputName = input.split(".")[0].replace(/ /g, "_");
-  const thumbnailDirectory = `zoom_screenshots_${inputName}`;
-  const croppedDirectory = `cropped_slides_${inputName}`;
-  const uniqueDirectory = `unique_slides_${inputName}`;
+  
+  if(input == null) {
+    console.error("Please provide path to the video file")
+    return;
+  }
 
-  console.log("input", input);
+  const fileName = extractFileName(input)
+  
+  const thumbnailDirectory = `zoom_screenshots_${fileName}`;
+  const croppedDirectory = `cropped_slides_${fileName}`;
+  const uniqueDirectory = `unique_slides_${fileName}`;
 
   let boundingRect;
   if (boundingRectInput) {
@@ -20,24 +31,24 @@ async function main() {
   }
 
   // Create thumbnails
+  console.log(">> Creating thumbnails")
   await createThumbnail(input, thumbnailDirectory);
-
-  console.log("boundingRect", boundingRect);
 
   // Crop screenshots only if boundingRect is provided
   if (boundingRect) {
 
-    console.log("go here")
+    console.log(">> Cropping screenshots")
     await cropScreenshots(thumbnailDirectory, croppedDirectory, boundingRect);
+    console.log(">> Removing similar images")
     await removeSimilar(croppedDirectory, uniqueDirectory);
   } else {
-    console.log("else here");
+    console.log(">> Removing similar images")
     await removeSimilar(thumbnailDirectory, uniqueDirectory);
   }
 
   // Delete the temporary directories
-  // await deleteDirectory(thumbnailDirectory);
-  // await deleteDirectory(croppedDirectory);
+  await deleteDirectory(thumbnailDirectory);
+  await deleteDirectory(croppedDirectory);
 }
 
 async function deleteDirectory(directory: string) {

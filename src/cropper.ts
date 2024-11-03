@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import cv from "@u4/opencv4nodejs";
 import sharp from "sharp";
 
 async function cropScreenshots(inputDirectory: string, outputDirectory: string, boundingRect: { x: number; y: number; width: number; height: number }) {
@@ -17,29 +16,32 @@ async function cropScreenshots(inputDirectory: string, outputDirectory: string, 
     .sort();
    
   // Process each image in the folder
-  images.forEach(async (imageName) => {
+  for (const imageName of images) {
     const imagePath = path.join(inputDirectory, imageName);
-    const originalImage = cv.imread(imagePath);
 
-    // Get image dimensions
-    const imageWidth = originalImage.cols;
-    const imageHeight = originalImage.rows;
-
-    // Adjust bounding box if it exceeds image dimensions
-    if (boundingRect.x + boundingRect.width > imageWidth) {
-        boundingRect.x = imageWidth - boundingRect.width; // Right justify
-    }
-    if (boundingRect.y + boundingRect.height > imageHeight) {
-        boundingRect.y = imageHeight - boundingRect.height; // Bottom justify
-    }
-
-    // Crop using Sharp
     try {
+      // Get image dimensions using sharp
+      const metadata = await sharp(imagePath).metadata();
+      const imageWidth = metadata.width || 0;
+      const imageHeight = metadata.height || 0;
+
+      // Adjust bounding box if it exceeds image dimensions
+      let adjustedX = boundingRect.x;
+      let adjustedY = boundingRect.y;
+
+      if (adjustedX + boundingRect.width > imageWidth) {
+        adjustedX = imageWidth - boundingRect.width; // Right justify
+      }
+      if (adjustedY + boundingRect.height > imageHeight) {
+        adjustedY = imageHeight - boundingRect.height; // Bottom justify
+      }
+
+      // Crop using Sharp
       const croppedImagePath = path.join(outputDirectory, imageName);
       await sharp(imagePath)
         .extract({
-          left: boundingRect.x,
-          top: boundingRect.y,
+          left: adjustedX,
+          top: adjustedY,
           width: boundingRect.width,
           height: boundingRect.height,
         })
@@ -47,9 +49,9 @@ async function cropScreenshots(inputDirectory: string, outputDirectory: string, 
 
       console.log(`Cropped slide saved to: ${croppedImagePath}`);
     } catch (error) {
-      console.error(`Error cropping image ${imageName}:`, error);
+      console.error(`Error processing image ${imageName}:`, error);
     }
-  });
+  }
 }
 
 export default cropScreenshots;
