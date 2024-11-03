@@ -2,9 +2,18 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "commonjs",
-    "strict": true,
+    
     "esModuleInterop": true,
     "skipLibCheck": true,
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "checkJs": true,
+
     "outDir": "./dist",
     "baseUrl": ".",
     "typeRoots": ["./node_modules/@types", "./@types"]

@@ -7,7 +7,8 @@
     "start": "ts-node src/main.ts",
     "extract": "ts-node src/extractScreenshots.ts",
     "crop": "ts-node src/cropper.ts",
-    "removeSimilar": "ts-node src/removeSimilar.ts"
+    "removeSimilar": "ts-node src/removeSimilar.ts",
+    "tsc": "tsc --build tsconfig.json"
   },
   "dependencies": {
     "path": "^0.12.7",
