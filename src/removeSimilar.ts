@@ -13,7 +13,6 @@ async function _areImagesSimilar(imagePath1: string, imagePath2: string, thresho
   }
 
   const diffPixels = img1.data.reduce((count, pixel, i) => (pixel === img2.data[i] ? count : count + 1), 0);
-
   const totalPixels = img1.info.width * img1.info.height;
   const differenceRatio = diffPixels / totalPixels;
 
