@@ -8,11 +8,16 @@
     "extract": "ts-node src/extractScreenshots.ts",
     "crop": "ts-node src/cropper.ts",
     "removeSimilar": "ts-node src/removeSimilar.ts",
-    "tsc": "tsc --build tsconfig.json"
+    "tsc": "tsc --build tsconfig.json",
+    "watch": "ts-node src/daemon.ts"
   },
   "dependencies": {
     "chalk": "^4.1.2",
+<<<<<<< HEAD
     "fluent-ffmpeg": "^2.1.3",
+=======
+    "child_process": "^1.0.2",
+>>>>>>> 4a3313e (matt daemon is the coolest)
     "path": "^0.12.7",
     "sharp": "^0.33.5",
     "util": "^0.12.4"
