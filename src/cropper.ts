@@ -1,23 +1,29 @@
-import * as fs from "fs";
-import * as path from "path";
-import sharp from "sharp";
+import * as fs from 'fs';
+import * as path from 'path';
+import sharp from 'sharp';
 
-async function cropScreenshots(inputDirectory: string, outputDirectory: string, boundingRect: { x: number; y: number; width: number; height: number }) {
-    
+export type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+async function cropScreenshots(inputDir: string, outputDir: string, boundingRect: Rect) {
   // Ensure the output directory exists
-  if (!fs.existsSync(outputDirectory)) {
-    fs.mkdirSync(outputDirectory);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
 
   // Get a list of all images in the directory
   const images = fs
-    .readdirSync(inputDirectory)
-    .filter((f) => f.endsWith(".png") || f.endsWith(".jpg") || f.endsWith(".jpeg"))
+    .readdirSync(inputDir)
+    .filter((f) => f.endsWith('.png') || f.endsWith('.jpg') || f.endsWith('.jpeg'))
     .sort();
-   
+
   // Process each image in the folder
   for (const imageName of images) {
-    const imagePath = path.join(inputDirectory, imageName);
+    const imagePath = path.join(inputDir, imageName);
 
     try {
       // Get image dimensions using sharp
@@ -37,7 +43,7 @@ async function cropScreenshots(inputDirectory: string, outputDirectory: string, 
       }
 
       // Crop using Sharp
-      const croppedImagePath = path.join(outputDirectory, imageName);
+      const croppedImagePath = path.join(outputDir, imageName);
       await sharp(imagePath)
         .extract({
           left: adjustedX,
@@ -46,8 +52,6 @@ async function cropScreenshots(inputDirectory: string, outputDirectory: string, 
           height: boundingRect.height,
         })
         .toFile(croppedImagePath);
-
-      console.log(`Cropped slide saved to: ${croppedImagePath}`);
     } catch (error) {
       console.error(`Error processing image ${imageName}:`, error);
     }

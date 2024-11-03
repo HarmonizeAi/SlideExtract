@@ -17,10 +17,6 @@ async function _areImagesSimilar(imagePath1: string, imagePath2: string, thresho
   const totalPixels = img1.info.width * img1.info.height;
   const differenceRatio = diffPixels / totalPixels;
 
-  if (differenceRatio > threshold) {
-    console.log(`Difference ratio: ${differenceRatio}`);
-  }
-
   return differenceRatio < threshold;
 }
 
@@ -32,14 +28,14 @@ const filterUniqueImages = async (inputDir: string, images: string[]): Promise<s
 
   for (let i = 1; i < images.length; i++) {
     const image = images[i];
-    const prevImage = images[i - 1];
-    if (image == null || prevImage == null) {
+    const lastUniqueImage = uniqueImages[uniqueImages.length - 1];
+    if (image == null || lastUniqueImage == null) {
       break;
     }
 
     const similar = await _areImagesSimilar(
       path.join(inputDir, image),
-      path.join(inputDir, prevImage),
+      path.join(inputDir, lastUniqueImage),
       SIMILARITY_THRESHHOLD,
     );
 
@@ -53,7 +49,7 @@ const filterUniqueImages = async (inputDir: string, images: string[]): Promise<s
 
 export default async function removeSimilarOrThrow(inputDir: string, outDir: string) {
   if (!fs.existsSync(outDir)) {
-    fs.mkdirSync(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
   }
 
   const images = fs
