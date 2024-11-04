@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
+    "target": "ES6",
+    "module": "commonjs",
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
+
+
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

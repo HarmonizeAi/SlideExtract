@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A CLI app to extract unique slide thumbnails from webinar videos.",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
     "start": "ts-node src/main.ts",
     "extract": "ts-node src/extractScreenshots.ts",
