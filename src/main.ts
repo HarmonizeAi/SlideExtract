@@ -42,23 +42,26 @@ async function processMp4(input: string) {
 }
 
 async function main() {
-  const INPUT_FOLDER_NAME = '../in';
+  const INPUT_FOLDER_NAME = 'in';
   const filesToProcess: string[] = [];
 
-  if (!fs.existsSync(path.join(__dirname, INPUT_FOLDER_NAME))) {
-    console.log(chalk.red("Please create './input' folder and place .mp4's there"));
+  const inputPath = path.join(__dirname, '..', INPUT_FOLDER_NAME);
+
+  if (!fs.existsSync(inputPath)) {
+    console.log(chalk.red(`Please create '${INPUT_FOLDER_NAME}' folder and place .mp4's there`));
     return;
   }
 
-  fs.readdirSync(path.join(__dirname, INPUT_FOLDER_NAME))
+  fs.readdirSync(inputPath)
     .filter((file) => file.toLowerCase().endsWith('.mp4'))
     .forEach((file) => {
       filesToProcess.push(file);
     });
+  inputPath;
 
   for (const file of filesToProcess) {
     console.log(chalk.blue('\n┌ Processing', file));
-    await processMp4(path.join(__dirname, INPUT_FOLDER_NAME, file));
+    await processMp4(path.join(inputPath, file));
   }
 }
 
