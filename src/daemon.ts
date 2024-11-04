@@ -1,42 +1,30 @@
 /*
-This file is a daemon that watches a specific directory for changes. When a new mp4 and SRT (subtitle) file is added to the directory, it triggers the execution of a main script.  The main script is responsible for processing the new file and performing any necessary operations.
+This file is a daemon that watches a specific directory for changes. When a new MP4 and SRT (subtitle) file is added to the directory, it triggers the execution of a main script. The main script is responsible for processing the new file and performing any necessary operations.
 */
 
-import fs from 'fs';
-import path from 'path';
 import { exec } from 'child_process';
+import { watch } from 'chokidar';
 
-// Directory to watch (set to 'in' directory)
 const directoryToWatch = 'in';
 
-// Function to execute the main script
-function runMainScript() {
-  const mainScriptPath = path.join(__dirname, 'main.ts');
-  exec(`node ${mainScriptPath}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing main script: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`Error in main script: ${stderr}`);
-      return;
-    }
-    console.log(`Output from main script: ${stdout}`);
-  });
+function startWatcher() {
+  watch(directoryToWatch, { persistent: true })
+    .on('add', (filePath) => {
+      console.log(`File added: ${filePath}`);
+      // Here you can trigger the main script to process the new file
+
+      // Execute the main script
+      exec(`npx tsx main.ts ${filePath}`);
+    })
+    .on('change', (filePath) => {
+      console.log(`File changed: ${filePath}`);
+      // Handle file changes if necessary
+    })
+    .on('unlink', (filePath) => {
+      console.log(`File removed: ${filePath}`);
+      // Handle file removal if necessary
+    });
 }
 
-// Watch the directory for changes
-fs.watch(directoryToWatch, (eventType, filename) => {
-  if (eventType === 'rename' && filename) {
-    const filePath = path.join(directoryToWatch, filename);
-    // Check if the file exists (indicating it was added)
-    fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (!err) {
-        console.log(`File added: ${filename}`);
-        runMainScript();
-      }
-    });
-  }
-});
-
-// ... existing code ...
+// Start the watcher
+startWatcher();
