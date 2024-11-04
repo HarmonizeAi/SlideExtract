@@ -1,63 +1,63 @@
 import * as fs from 'fs';
-import cropScreenshots, { type Rect } from './cropper';
-import createThumbnail from './extractScreenshots';
-import removeSimilar from './removeSimilar';
 import chalk from 'chalk';
 import path from 'path';
+import createThumbnail from './extractScreenshots';
+import removeSimilar from './removeSimilar';
+import { deleteDirectory, extractFileName } from './utils';
 
-function extractRectFromInput(s?: string) {
-  if (s == null) return undefined;
-  const [x, y, width, height] = s.split(',').map(Number);
-  if (x == null || y == null || width == null || height == null) return undefined;
-  return { x, y, width, height };
-}
+async function processMp4(input: string) {
+  const fileName = extractFileName(input);
 
-function extractFileName(filePath: string): string {
-  const fileNameWExtension = filePath.split(/[\\/]/).pop() || filePath;
-  const fileName = fileNameWExtension.split('.')[0] || fileNameWExtension;
-  return fileName.replace(/ /g, '_').replace(/[^\_a-zA-Z0-9]/g, '');
-}
-
-async function main() {
-  const input = process.argv[2]; // Get input from command line
-  const boundingRectInput = process.argv[3]; // Get bounding box from command line
-
-  if (input == null) {
-    console.error('Please provide path to the video file');
+  if (fs.existsSync(path.join(__dirname, `../out/${fileName}`))) {
+    console.log(chalk.yellow('└ Files already exist, skipping\n'));
     return;
   }
 
-  const fileName = extractFileName(input);
-
   const thumbnailDirectory = path.join(__dirname, `../out/${fileName}/screnshots`);
-  const croppedDirectory = path.join(__dirname, `../out/${fileName}/cropped`);
+  // const croppedDirectory = path.join(__dirname, `../out/${fileName}/cropped`);
   const uniqueDirectory = path.join(__dirname, `../out/${fileName}`);
 
-  const boundingRect = extractRectFromInput(boundingRectInput);
+  // const boundingRect = extractRectFromInput(boundingRectInput);
 
   // Create thumbnails
-  console.log(chalk.green('>> Creating thumbnails'));
+  console.log(chalk.green('├ Creating thumbnails'));
   await createThumbnail(input, thumbnailDirectory);
 
   // Crop screenshots only if boundingRect is provided
-  if (boundingRect) {
-    console.log(chalk.green('>> Cropping screenshots'));
-    await cropScreenshots(thumbnailDirectory, croppedDirectory, boundingRect);
-    console.log(chalk.green('>> Removing similar images'));
-    await removeSimilar(croppedDirectory, uniqueDirectory);
-  } else {
-    console.log(chalk.green('>> Removing similar images'));
-    await removeSimilar(thumbnailDirectory, uniqueDirectory);
-  }
+  // if (boundingRect) {
+  //   console.log(chalk.green('>> Cropping screenshots'));
+  //   await cropScreenshots(thumbnailDirectory, croppedDirectory, boundingRect);
+  //   console.log(chalk.green('>> Removing similar images'));
+  //   await removeSimilar(croppedDirectory, uniqueDirectory);
+  // } else {
+  console.log(chalk.green('├ Removing similar images'));
+  await removeSimilar(thumbnailDirectory, uniqueDirectory);
+  // }
 
   // Delete the temporary directories
   await deleteDirectory(thumbnailDirectory);
-  await deleteDirectory(croppedDirectory);
+  // await deleteDirectory(croppedDirectory);
+
+  console.log(chalk.green('└ Done\n'));
 }
 
-async function deleteDirectory(directory: string) {
-  if (fs.existsSync(directory)) {
-    fs.rmSync(directory, { recursive: true });
+async function main() {
+  const filesToProcess: string[] = [];
+
+  if (!fs.existsSync(path.join(__dirname, '../input'))) {
+    console.log(chalk.red("Please create './input' folder and place .mp4's there"));
+    return;
+  }
+
+  fs.readdirSync(path.join(__dirname, '../input'))
+    .filter((file) => file.toLowerCase().endsWith('.mp4'))
+    .forEach((file) => {
+      filesToProcess.push(file);
+    });
+
+  for (const file of filesToProcess) {
+    console.log(chalk.blue('\n┌ Processing', file));
+    await processMp4(path.join(__dirname, '../input', file));
   }
 }
 
